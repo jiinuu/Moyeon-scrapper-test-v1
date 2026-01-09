@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Network, Database, ExternalLink, Loader2, Info, Share2, Layers } from 'lucide-react';
+import { Search, Network, Database, ExternalLink, Loader2, Info, Share2, Layers, AlertTriangle } from 'lucide-react';
 import NetworkGraph from './components/NetworkGraph';
 import { searchPolicies, structurePolicyData } from './services/geminiService';
 import { GraphData, PolicyNode, ProcessingStatus, Source } from './types';
@@ -50,8 +50,17 @@ const App: React.FC = () => {
 
       setStatus({ step: 'complete', message: 'Visualization ready.' });
 
-    } catch (error) {
-      setStatus({ step: 'error', message: 'An error occurred. Please check API Key or try again.' });
+    } catch (error: any) {
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      // Detailed error check
+      if (error.message?.includes('429') || error.status === 429) {
+        errorMessage = 'Too many requests. Please wait a minute and try again (Quota Exceeded).';
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
+      }
+
+      setStatus({ step: 'error', message: errorMessage });
     }
   };
 
@@ -69,7 +78,7 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        {/* API Key Warning (Hidden in prod logic, but good for demo) */}
+        {/* API Key Warning */}
         {!process.env.API_KEY && (
            <span className="text-red-500 text-sm font-semibold bg-red-50 px-3 py-1 rounded-full">
              Missing API_KEY in env
@@ -119,13 +128,20 @@ const App: React.FC = () => {
             </form>
 
             {/* Status Indicator */}
-            <div className="mt-4 flex items-center space-x-2 text-sm">
-              <div className={`w-2 h-2 rounded-full ${
-                status.step === 'error' ? 'bg-red-500' :
-                status.step === 'complete' ? 'bg-green-500' :
-                status.step === 'idle' ? 'bg-slate-300' : 'bg-blue-500 animate-pulse'
-              }`} />
-              <span className="text-slate-600 truncate">{status.message}</span>
+            <div className={`mt-4 flex items-start space-x-2 text-sm p-3 rounded-lg ${
+              status.step === 'error' ? 'bg-red-50 border border-red-200' : 'bg-transparent'
+            }`}>
+              {status.step === 'error' ? (
+                <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              ) : (
+                <div className={`w-2 h-2 rounded-full mt-1.5 ${
+                  status.step === 'complete' ? 'bg-green-500' :
+                  status.step === 'idle' ? 'bg-slate-300' : 'bg-blue-500 animate-pulse'
+                }`} />
+              )}
+              <span className={`break-words ${status.step === 'error' ? 'text-red-700' : 'text-slate-600'}`}>
+                {status.message}
+              </span>
             </div>
           </div>
 

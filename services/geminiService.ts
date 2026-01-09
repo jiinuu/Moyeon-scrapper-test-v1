@@ -5,14 +5,39 @@ import { GraphData, Source } from "../types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
+ * Helper function to retry API calls with exponential backoff
+ */
+async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {
+  try {
+    return await operation();
+  } catch (error: any) {
+    // Check for 429 (Resource Exhausted) or 503 (Service Unavailable)
+    const isRateLimit = 
+      error.status === 429 || 
+      error.code === 429 || 
+      error.message?.includes('429') || 
+      error.message?.includes('Quota') ||
+      error.message?.includes('RESOURCE_EXHAUSTED');
+
+    if (isRateLimit && retries > 0) {
+      console.warn(`Rate limit hit. Retrying in ${delay}ms... (${retries} retries left)`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return retryWithBackoff(operation, retries - 1, delay * 2);
+    }
+    
+    throw error;
+  }
+}
+
+/**
  * Step 1: Search for information using Gemini with Google Search Grounding.
  */
 export const searchPolicies = async (query: string): Promise<{ text: string; sources: Source[] }> => {
   try {
     const model = 'gemini-3-flash-preview'; 
     
-    // We strictly use Google Search tool here
-    const response = await ai.models.generateContent({
+    // Wrap the API call in retry logic
+    const response = await retryWithBackoff(() => ai.models.generateContent({
       model: model,
       contents: `Search thoroughly for official and recent policies, welfare programs, visa regulations, and support systems for foreign residents living in Ansan City (Ansan-si), South Korea. 
       Focus on data from the Ansan City Hall, Ansan Migrant Community Service Center, and relevant government bodies.
@@ -25,9 +50,10 @@ export const searchPolicies = async (query: string): Promise<{ text: string; sou
       User Query Context: ${query}`,
       config: {
         tools: [{ googleSearch: {} }],
-        thinkingConfig: { thinkingBudget: 1024 } // Allow some thinking for search strategy
+        // Reduced thinking budget slightly to save tokens, though not main cause of 429
+        thinkingConfig: { thinkingBudget: 512 } 
       },
-    });
+    }));
 
     const text = response.text || "No detailed text returned.";
     
@@ -53,7 +79,7 @@ export const searchPolicies = async (query: string): Promise<{ text: string; sou
 
   } catch (error) {
     console.error("Search Error:", error);
-    throw new Error("Failed to search for policy data.");
+    throw error; // Propagate error to be caught in App.tsx
   }
 };
 
@@ -62,7 +88,8 @@ export const searchPolicies = async (query: string): Promise<{ text: string; sou
  */
 export const structurePolicyData = async (rawText: string): Promise<GraphData> => {
   try {
-    const response = await ai.models.generateContent({
+    // Wrap the API call in retry logic
+    const response = await retryWithBackoff(() => ai.models.generateContent({
       model: 'gemini-3-flash-preview', // Flash is sufficient for text-to-json extraction
       contents: `You are an expert Data Architect and Ontologist. 
       Analyze the following text describing policies for foreign residents in Ansan City.
@@ -72,7 +99,7 @@ export const structurePolicyData = async (rawText: string): Promise<GraphData> =
       Create 'links' representing the relationship between them (e.g., 'provides', 'is_eligible_for', 'manages', 'requires').
 
       Text to Analyze:
-      ${rawText.substring(0, 20000)}`, // Truncate if too long, though Flash context is large
+      ${rawText.substring(0, 15000)}`, // Reduced context slightly to safely stay within limits
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -110,7 +137,7 @@ export const structurePolicyData = async (rawText: string): Promise<GraphData> =
           required: ["nodes", "links"]
         }
       }
-    });
+    }));
 
     const jsonText = response.text;
     if (!jsonText) throw new Error("No JSON generated.");
@@ -119,6 +146,6 @@ export const structurePolicyData = async (rawText: string): Promise<GraphData> =
 
   } catch (error) {
     console.error("Structuring Error:", error);
-    throw new Error("Failed to structure data into ontology.");
+    throw error;
   }
 };
