@@ -1,0 +1,5 @@
+{
+  "name": "Ansan Policy Nexus",
+  "description": "An AI Agent that collects, structures, and visualizes foreign resident policies in Ansan City as an interactive ontology network.",
+  "requestFramePermissions": []
+}
