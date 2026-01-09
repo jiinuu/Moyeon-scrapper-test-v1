@@ -9,7 +9,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
  */
 export const searchPolicies = async (query: string): Promise<{ text: string; sources: Source[] }> => {
   try {
-    const model = 'gemini-3-pro-preview'; 
+    const model = 'gemini-3-flash-preview'; 
     
     // We strictly use Google Search tool here
     const response = await ai.models.generateContent({
