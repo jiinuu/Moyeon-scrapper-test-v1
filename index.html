@@ -5,39 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ansan Policy Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      /* Custom scrollbar for webkit */
+      :root {
+        --font-sans: 'DM Sans', sans-serif;
+        --font-display: 'Space Grotesk', sans-serif;
+      }
+      body {
+        font-family: var(--font-sans);
+        background-color: #F0F2F5;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-display);
+      }
+      /* Custom scrollbar */
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: #f1f5f9; 
+        background: transparent; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #94a3b8; 
-        border-radius: 4px;
+        background: #CBD5E1; 
+        border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #64748b; 
+        background: #94A3B8; 
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
     "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
     "d3": "https://esm.sh/d3@^7.9.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "vite": "https://esm.sh/vite@^7.3.1"
   }
 }
 </script>
 </head>
-  <body class="bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden">
+  <body class="text-slate-900 antialiased overflow-hidden selection:bg-blue-100 selection:text-blue-900">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
