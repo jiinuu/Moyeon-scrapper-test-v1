@@ -36,7 +36,7 @@ export interface DataTable {
   source: string; // e.g., 'Ansan City Hall'
   format: 'CSV' | 'XLSX' | 'JSON' | 'API';
   columns: string[];
-  rows: Record<string, any>[];
+  rows: string[][]; // Changed to array of arrays for strict schema compliance
   description?: string;
   collectedAt: string;
 }

@@ -209,7 +209,8 @@ export const generateStatisticalData = async (query: string, sourceContext?: str
       1. 안산시 혹은 관련 기관에서 실제로 제공할 법한 CSV/Excel 데이터를 시뮬레이션하여 생성하세요.
       2. **컬럼명과 데이터 내용은 반드시 한국어여야 합니다.**
       3. 데이터 출처(Source)는 구체적인 기관명(예: 안산시청 외국인주민지원과)을 명시하세요.
-      4. 문맥: ${sourceContext || '일반 수집'}`,
+      4. **'rows'는 'columns'의 순서에 맞는 값(Value)들의 배열(Array)이어야 합니다.** (객체 아님)
+      5. 문맥: ${sourceContext || '일반 수집'}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -225,8 +226,8 @@ export const generateStatisticalData = async (query: string, sourceContext?: str
             rows: { 
               type: Type.ARRAY, 
               items: { 
-                type: Type.OBJECT,
-                properties: {},
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
               } 
             },
             collectedAt: { type: Type.STRING }

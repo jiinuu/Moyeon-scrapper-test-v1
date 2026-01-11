@@ -430,9 +430,9 @@ const App: React.FC = () => {
                                <tbody>
                                  {table.rows.map((row, idx) => (
                                    <tr key={idx} className="bg-white border-t border-slate-100 hover:bg-slate-50/80 transition-colors">
-                                     {table.columns.map(col => (
-                                       <td key={`${idx}-${col}`} className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
-                                         {row[col]}
+                                     {row.map((cell, cellIdx) => (
+                                       <td key={`${idx}-${cellIdx}`} className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
+                                         {cell}
                                        </td>
                                      ))}
                                    </tr>
